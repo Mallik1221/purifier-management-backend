@@ -63,18 +63,30 @@ exports.deletePurifier = async (req, res) => {
 // Toggle purifier status
 exports.togglePurifierStatus = async (req, res) => {
   try {
+
     const purifier = await Purifier.findOne({ id: req.params.id });
 
     if (!purifier) {
-      return res.status(404).json({ message: 'Purifier not found' });
+      console.error(`Purifier not found with ID: ${req.params.id}`);
+      return res.status(404).json({ 
+        message: 'Purifier not found', 
+        id: req.params.id 
+      });
     }
 
-    purifier.status = !purifier.status;
+    // Explicitly toggle the status
+    purifier.status = purifier.status === true ? false : true;
     purifier.lastUpdated = new Date();
     
     const updatedPurifier = await purifier.save();
+    
+
     res.json(updatedPurifier);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Toggle Status Error:', error);
+    res.status(500).json({ 
+      message: 'Error toggling purifier status', 
+      error: error.message 
+    });
   }
 };
