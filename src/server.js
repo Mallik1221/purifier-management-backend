@@ -1,8 +1,9 @@
 const express = require('express');
+require('dotenv').config();
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
-require('dotenv').config();
+
 
 const purifierRoutes = require('./routes/purifierRoutes');
 
@@ -15,7 +16,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

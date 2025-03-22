@@ -17,6 +17,14 @@ exports.createPurifier = async (req, res) => {
   try {
     const newPurifier = new Purifier(purifierData);
     const savedPurifier = await newPurifier.save();
+
+    // Set status to active and start a timer for 30 seconds
+    savedPurifier.status = true;
+    const timer = setTimeout(async () => {
+        savedPurifier.status = false; // Set status to inactive after 30 seconds
+        await savedPurifier.save();
+    }, 30000); // 30 seconds
+
     res.status(201).json(savedPurifier);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -38,7 +46,16 @@ exports.updatePurifier = async (req, res) => {
     if (!updatedPurifier) {
       return res.status(404).json({ message: 'Purifier not found' });
     }
-
+    
+    // Check if status is being set to active
+    if (req.body.status === true) {
+      updatedPurifier.status = true; // Activate the purifier
+      const timer = setTimeout(async () => {
+          updatedPurifier.status = false; // Set status to inactive after 30 seconds
+          await updatedPurifier.save();
+      }, 30000); // 30 seconds
+    }
+  
     res.json(updatedPurifier);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -76,6 +93,15 @@ exports.togglePurifierStatus = async (req, res) => {
 
     // Explicitly toggle the status
     purifier.status = purifier.status === true ? false : true;
+
+    // Check if status is being set to active
+    if (purifier.status === true) {
+      const timer = setTimeout(async () => {
+          purifier.status = false; // Set status to inactive after 30 seconds
+          await purifier.save();
+      }, 30000); // 30 seconds
+  }
+  
     purifier.lastUpdated = new Date();
     
     const updatedPurifier = await purifier.save();
