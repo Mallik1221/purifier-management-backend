@@ -13,13 +13,13 @@ router.delete('/:id', purifierController.deletePurifier);
 router.patch('/:id/toggle-status', purifierController.togglePurifierStatus);
 
 // Get purifier status by id
-router.get('/:id', async (req, res) => {
+router.get('/:id/status', async (req, res) => {
     try {
         const purifier = await Purifier.findOne({ id: req.params.id });
         if (!purifier) {
             return res.status(404).json({ message: 'Purifier not found' });
         }
-        res.json({ id: purifier.id, status: purifier.status ? 1 : 0 }); // Return status as 1 or 0
+        res.json(purifier.status ? 1 : 0); // Return status as 1 or 0
     } catch (error) {
         console.error(`Error fetching purifier: ${error.message}`); // Log the error message
         res.status(500).json({ message: error.message });
