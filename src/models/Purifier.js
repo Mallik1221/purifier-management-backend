@@ -40,7 +40,7 @@ const PurifierSchema = new mongoose.Schema({
   },
   onlineStatus: {
     type: Boolean,
-    default: false // This represents the online status, defaulting to offline
+    default: false // This represents the switch status, defaulting to offline
   },
   lastUpdated: {
     type: Date,
