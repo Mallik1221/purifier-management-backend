@@ -12,14 +12,31 @@ router.put('/:id', purifierController.updatePurifier);
 router.delete('/:id', purifierController.deletePurifier);
 router.patch('/:id/toggle-status', purifierController.togglePurifierStatus);
 
-// Get purifier status by id
+// Get purifier status(This is Device status) by id
+// router.get('/:id/status', async (req, res) => {
+//     try {
+//         const purifier = await Purifier.findOne({ id: req.params.id });
+//         if (!purifier) {
+//             return res.status(404).json({ message: 'Purifier not found' });
+//         }
+//         res.json(purifier.status ? 1 : 0); // Return status as 1 or 0
+//     } catch (error) {
+//         console.error(`Error fetching purifier: ${error.message}`); // Log the error message
+//         res.status(500).json({ message: error.message });
+//     }
+// });
+
+//NOTE: In the above api endpoint - status => Device status
+        //but for the below endpoint - toggle-status[onlineStatus] => Switch status
+
+//Get purifier toggle-status by id
 router.get('/:id/status', async (req, res) => {
     try {
         const purifier = await Purifier.findOne({ id: req.params.id });
         if (!purifier) {
             return res.status(404).json({ message: 'Purifier not found' });
         }
-        res.json(purifier.status ? 1 : 0); // Return status as 1 or 0
+        res.json(purifier.onlineStatus ? 1 : 0); // Return status as 1 or 0
     } catch (error) {
         console.error(`Error fetching purifier: ${error.message}`); // Log the error message
         res.status(500).json({ message: error.message });
