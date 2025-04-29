@@ -10,6 +10,20 @@ const purifierRoutes = require('./routes/purifierRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Disable 'x-powered-by' header
+app.disable('x-powered-by');
+
+app.set('etag', false); // Disable ETag header
+
+// Middleware to remove or modify headers
+app.use((req, res, next) => {
+
+  // Remove unwanted headers 
+  res.removeHeader('Connection');
+
+  next();
+});
+
 // Middleware
 app.use(cors());
 app.use(morgan('dev'));
