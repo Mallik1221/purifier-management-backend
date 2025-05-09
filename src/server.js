@@ -3,7 +3,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
-
+const startPoller = require('./utils/poller');
 
 const purifierRoutes = require('./routes/purifierRoutes');
 
@@ -46,9 +46,17 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
+//message from server 
+app.get('/', (req, res) => {
+  res.send('Hello from server');
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startPoller();
+  console.log('Thingspeak Poller started running..')
+
 });
 
 module.exports = app;
