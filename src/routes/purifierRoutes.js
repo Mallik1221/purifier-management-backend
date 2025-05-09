@@ -127,6 +127,8 @@ router.get('/:id/status', async (req, res) => {
 
 //thingspeak status updating using querying
 
+//note: the below route works for both thingspeak and switch status
+
 router.put('/', async (req, res) => {
     const { id, status } = req.query;
 
