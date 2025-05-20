@@ -44,7 +44,7 @@ exports.updatePurifier = async (req, res) => {
     );
 
     if (!updatedPurifier) {
-      return res.status(404).json({ message: 'Purifier not found' });
+      return res.status(404).json({ message: 'Purifier not foundy' });
     }
   
     res.json(updatedPurifier);
@@ -69,43 +69,9 @@ exports.deletePurifier = async (req, res) => {
 };
 
 // Toggle purifier status
-// exports.togglePurifierStatus = async (req, res) => {
-//   try {
-
-//     const purifier = await Purifier.findOne({ id: req.params.id });
-
-//     if (!purifier) {
-//       console.error(`Purifier not found with ID: ${req.params.id}`);
-//       return res.status(404).json({ 
-//         message: 'Purifier not found', 
-//         id: req.params.id 
-//       });
-//     }
-
-//     // Explicitly toggle the status
-//     // purifier.status = purifier.status === true ? false : true;
-//     purifier.onlineStatus = !purifier.onlineStatus ;
-  
-//     purifier.lastUpdated = new Date();
-    
-//     const updatedPurifier = await purifier.save();
-    
-
-//     res.json(updatedPurifier);
-//   } catch (error) {
-//     console.error('Toggle Status Error:', error);
-//     res.status(500).json({ 
-//       message: 'Error toggling purifier status', 
-//       error: error.message 
-//     });
-//   }
-// };
-
-//testing: thingspeak toggle purifier status
-const axios = require('axios');
-
 exports.togglePurifierStatus = async (req, res) => {
   try {
+
     const purifier = await Purifier.findOne({ id: req.params.id });
 
     if (!purifier) {
@@ -116,21 +82,14 @@ exports.togglePurifierStatus = async (req, res) => {
       });
     }
 
-    // Toggle status
-    purifier.onlineStatus = !purifier.onlineStatus;
+    // Explicitly toggle the status
+    // purifier.status = purifier.status === true ? false : true;
+    purifier.onlineStatus = !purifier.onlineStatus ;
+  
     purifier.lastUpdated = new Date();
-
+    
     const updatedPurifier = await purifier.save();
-
-    // Send updated status to ThingSpeak
-    const thingSpeakUrl = `https://api.thingspeak.com/update`;
-    const params = {
-      api_key: 'UAIJU7YW9JQLB8RY', // replace with process.env if you’re using .env
-      field1: purifier.id,
-      field2: purifier.onlineStatus ? 1 : 0
-    };
-
-    await axios.get(thingSpeakUrl, { params });
+    
 
     res.json(updatedPurifier);
   } catch (error) {
