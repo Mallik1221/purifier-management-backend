@@ -56,6 +56,54 @@ router.put('/update-status', async (req, res) => {
     }
 });
 
+// New route which returns current switch status & activate device status to 1 or 0.
+//the below route is somewhat confusing here the route name is diff, but it would work as same; refer model.js 
+router.get('/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { onlineStatus } = req.query;
+
+  try {
+    const purifier = await Purifier.findOne({ id });
+
+    if (!purifier) {
+      return res.status(404).json({ message: 'Purifier not found', id });
+    }
+
+    // If onlineStatus=1 is passed, activate device temporarily (status = true for 30s)
+    if (onlineStatus === '1') {
+      purifier.status = true; // turn on device
+
+      if (activeTimers.has(id)) {
+        clearTimeout(activeTimers.get(id)); // clear existing timer
+      }
+
+      const timer = setTimeout(async () => {
+        purifier.status = false; // turn off after 30 seconds
+        await purifier.save();
+        activeTimers.delete(id);
+      }, 30000); // 30 seconds
+
+      activeTimers.set(id, timer);
+      await purifier.save();
+    }
+
+    // Return only the switch status (onlineStatus)
+    return res.json({
+      id: purifier.id,
+      message: onlineStatus === '1' 
+        ? 'Switch status returned and purifier activated' 
+        : 'Switch status returned',
+      switchStatus: purifier.onlineStatus ? 1 : 0 // onlineStatus is the switch
+    });
+
+  } catch (error) {
+    console.error('Error in /:id/status route:', error);
+    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  }
+});
+
+
+
 
 router.get('/', purifierController.getAllPurifiers);
 router.post('/', purifierController.createPurifier);
