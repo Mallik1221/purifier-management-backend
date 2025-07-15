@@ -81,7 +81,7 @@ router.get('/:id/status', async (req, res) => {
         purifier.status = false; // turn off after 30 seconds
         await purifier.save();
         activeTimers.delete(id);
-      }, 30000); // 30 seconds
+      }, 60000); // 60 seconds
 
       activeTimers.set(id, timer);
       await purifier.save();
