@@ -7,7 +7,7 @@ const axios = require('axios');
 
 // Map to store active timers
 const activeTimers = new Map();
- //  Update purifier(device) status by id using querying
+//  Update purifier(device) status by id using querying
 router.put('/update-status', async (req, res) => {
     console.log("Hit update-status route");
 
@@ -15,7 +15,7 @@ router.put('/update-status', async (req, res) => {
     console.log("Incoming ID:", id);
 
     try {
-        const purifier = await Purifier.findOne({id:id});
+        const purifier = await Purifier.findOne({ id: id });
         if (!purifier) {
             return res.status(404).json({ message: 'Purifier not found' });
         }
@@ -33,7 +33,7 @@ router.put('/update-status', async (req, res) => {
                 purifier.status = false; // Set status to inactive after 60 seconds
                 await purifier.save();
                 activeTimers.delete(id); // Remove timer from map
-            }, 30000); // 30 seconds
+            }, 60000); // 60 seconds
             activeTimers.set(id, timer); // Store the timer
         } else {
             if (activeTimers.has(id)) {
@@ -45,10 +45,10 @@ router.put('/update-status', async (req, res) => {
         await purifier.save();
 
         // Return id, message, and status in the response
-        res.json({ 
-            id: purifier.id, 
-            message: 'Purifier status updated successfully', 
-            status: purifier.status ? 1 : 0 
+        res.json({
+            id: purifier.id,
+            message: 'Purifier status updated successfully',
+            status: purifier.status ? 1 : 0
         });
     } catch (error) {
         console.error(`Error updating purifier: ${error.message}`);
@@ -59,47 +59,50 @@ router.put('/update-status', async (req, res) => {
 // New route which returns current switch status & activate device status to 1 or 0.
 //the below route is somewhat confusing here the route name is diff, but it would work as same; refer model.js 
 router.get('/:id/status', async (req, res) => {
-  const { id } = req.params;
-  const { onlineStatus } = req.query;
+    const { id } = req.params;
+    const { onlineStatus } = req.query;
 
-  try {
-    const purifier = await Purifier.findOne({ id });
+    try {
+        const purifier = await Purifier.findOne({ id });
 
-    if (!purifier) {
-      return res.status(404).json({ message: 'Purifier not found', id });
+        if (!purifier) {
+            return res.status(404).json({ message: 'Purifier not found', id });
+        }
+
+        // If onlineStatus=1 is passed, activate device temporarily (status = true for 30s)
+        if (onlineStatus === '1') {
+            purifier.status = true; // turn on device
+
+            if (activeTimers.has(id)) {
+                clearTimeout(activeTimers.get(id)); // clear existing timer
+            }
+
+            const timer = setTimeout(async () => {
+                if (purifier.status) {            // Only turn off if it's currently ON
+                    purifier.status = false;
+                    purifier.lastOnline = new Date(); //Only update lastOnline if it was ON
+                    await purifier.save();
+                }
+                activeTimers.delete(id);
+            }, 60000); // 60 seconds
+
+            activeTimers.set(id, timer);
+            await purifier.save();
+        }
+
+        // Return only the switch status (onlineStatus)
+        return res.json({
+            id: purifier.id,
+            message: onlineStatus === '1'
+                ? 'Switch status returned and purifier activated'
+                : 'Switch status returned',
+            switchStatus: purifier.onlineStatus ? 1 : 0 // onlineStatus is the switch
+        });
+
+    } catch (error) {
+        console.error('Error in /:id/status route:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-
-    // If onlineStatus=1 is passed, activate device temporarily (status = true for 30s)
-    if (onlineStatus === '1') {
-      purifier.status = true; // turn on device
-
-      if (activeTimers.has(id)) {
-        clearTimeout(activeTimers.get(id)); // clear existing timer
-      }
-
-      const timer = setTimeout(async () => {
-        purifier.status = false; // turn off after 30 seconds
-        await purifier.save();
-        activeTimers.delete(id);
-      }, 60000); // 60 seconds
-
-      activeTimers.set(id, timer);
-      await purifier.save();
-    }
-
-    // Return only the switch status (onlineStatus)
-    return res.json({
-      id: purifier.id,
-      message: onlineStatus === '1' 
-        ? 'Switch status returned and purifier activated' 
-        : 'Switch status returned',
-      switchStatus: purifier.onlineStatus ? 1 : 0 // onlineStatus is the switch
-    });
-
-  } catch (error) {
-    console.error('Error in /:id/status route:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
 });
 
 
@@ -126,7 +129,7 @@ router.patch('/:id/toggle-status', purifierController.togglePurifierStatus);
 // });
 
 //NOTE: In the above api endpoint - status => Device status
-        //but for the below endpoint - toggle-status[onlineStatus] => Switch status
+//but for the below endpoint - toggle-status[onlineStatus] => Switch status
 
 //Get purifier toggle-status by id
 router.get('/:id/status', async (req, res) => {
@@ -143,9 +146,9 @@ router.get('/:id/status', async (req, res) => {
 });
 
 // Update purifier(device) status by id using querying
-    //moved to top: because of route order precedence
+//moved to top: because of route order precedence
 
-   
+
 
 
 //update switch status by id using querying
@@ -169,10 +172,10 @@ router.put('/', async (req, res) => {
         await purifier.save();
 
         // Return id, message, and status in the response
-        res.json({ 
-            id: purifier.id, 
-            message: 'Purifier status updated successfully', 
-            status: purifier.onlineStatus ? 1 : 0 
+        res.json({
+            id: purifier.id,
+            message: 'Purifier status updated successfully',
+            status: purifier.onlineStatus ? 1 : 0
         });
     } catch (error) {
         console.error(`Error updating purifier: ${error.message}`);

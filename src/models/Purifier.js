@@ -45,7 +45,11 @@ const PurifierSchema = new mongoose.Schema({
   lastUpdated: {
     type: Date,
     default: Date.now
-  }
+  },
+  lastOnline: {
+  type: Date,
+  default: null
+}
 }, {
   timestamps: true
 });
